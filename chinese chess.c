@@ -15,10 +15,10 @@ int checkpiece(const int *a,const int **b,const int m);
 int checkplace(int *a,const int *b);
 int function(const int *a);
 int gameend(const int **chpiece,const int count);
-/*
-HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);        
-HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE); 
-*/
+
+HANDLE hOut;
+HANDLE hIn;
+
 void gotoxy(int x, int y)    //光标移动到目标坐标
 {
         COORD pos;
@@ -36,27 +36,29 @@ void HideCursor()       //隐藏闪烁光标
     CONSOLE_CURSOR_INFO cursor_info = {1, 0};	//改为CONSOLE_CURSOR_INFO cursor_info = {1, 1}; 则光标可见
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor_info);
 }
-void color(short x)	//自定义函根据参数改变颜色 
+void color(short x)	//自定义函根据参数改变颜色
 {
     if(x>=0 && x<=15)//参数在0-15的范围颜色
-    	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x);	//只有一个参数，改变字体颜色 
+    	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), x);	//只有一个参数，改变字体颜色
     else//默认的颜色白色
     	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
 }
 int main()                                                              //主程序
 {
-//	SetConsoleMode(hIn, ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 	int i,j,re,count = 1;
 	int bf[2];
 	int *fclickplace,*sclickplace,*fbf,*sbf;
 	int **chpiece;
 
 	HideCursor();
-//	system("mode con cols=100 lines=40");
+	hIn = GetStdHandle(STD_INPUT_HANDLE);
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleMode(hIn,ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
+	system("mode con cols=100 lines=40");
 
 	chpiece = (int **)malloc(10*sizeof(int *));
 	for(i = 0;i < 10;i++)
-		chpiece[i] = (int *)malloc(9*sizeof(int)); 
+		chpiece[i] = (int *)malloc(9*sizeof(int));
 	fclickplace = (int *)malloc(2*sizeof(int));
 	sclickplace = (int *)malloc(2*sizeof(int));
 	sbf = (int *)malloc(2*sizeof(int));
@@ -76,6 +78,7 @@ int main()                                                              //主程
 
 rs:	while(1)										//开始下棋
 	{
+		SetConsoleMode(hIn,ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT);
 		HideCursor();
 		count = count%2;
 		do{											//选择棋子
@@ -236,7 +239,7 @@ void chessboard()//打印空棋盘
 				for(j = 0;j < 7;j++)
 					printf(" — ┼ ");
 			}
-			
+
 			if(i == 0)
 				printf(" — ┐   \n");
 			else if(i == 27)
@@ -265,7 +268,7 @@ void chesskind(const int i,const int j,const int a)                             
 	gotoxy((2+6*j) ,(3+3*i));
 	printf(" ");
 	switch(a){
-			case 1: 
+			case 1:
 				printf("車");
 				break;
 			case 2:
@@ -292,7 +295,7 @@ void chesskind(const int i,const int j,const int a)                             
 			case 9:
 				printf("馬");
 				break;
-			case 10: 
+			case 10:
 				printf("相");
 				break;
 			case 11:
@@ -342,7 +345,7 @@ void startpiece(int **chpiece)//初始化棋子位置
 			case 0:
 				if(j < 5)
 					chpiece[i][j] = j+1;
-				else 
+				else
 					chpiece[i][j] = 9-j;
 				break;
 			case 9:
@@ -529,16 +532,16 @@ int changepiece(const int *a,const int *b,const int m)                          
 	return 0;
 }
 int getclick(int *a)  //获取鼠标输入
-{  
-	// 获取标准输入输出设备句柄  
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);        
-	HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE); 
- 
+{
+	// 获取标准输入输出设备句柄
+//	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+//	HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+
 	CONSOLE_SCREEN_BUFFER_INFO bInfo;
 	INPUT_RECORD	mouseRec;
 	DWORD			res;
 	COORD			crPos, crHome = {0, 3};
- 
+
 //	printf("[Cursor Position] X: %2lu  Y: %2lu\n", 0, 0);	// 初始状态
 
 	while(1)
@@ -552,7 +555,7 @@ int getclick(int *a)  //获取鼠标输入
 			SetConsoleCursorPosition(hOut, crHome);
 //			printf("[Cursor Position] X: %2lu  Y: %2lu", crPos.X, crPos.Y);//crPos.X为横坐标，crPos.Y为纵坐标
 			SetConsoleCursorPosition(hOut, bInfo.dwCursorPosition);
- 
+
 			switch (mouseRec.Event.MouseEvent.dwButtonState)
 			{
 			case FROM_LEFT_1ST_BUTTON_PRESSED:			// 左键
@@ -560,8 +563,8 @@ int getclick(int *a)  //获取鼠标输入
 				a[0] = (int)crPos.X, a[1] = (int)crPos.Y;//获取点击位置
 				return 0;
 				break;		// 如果使用printf输出，则之前需要先设置光标的位置
- 
-			case RIGHTMOST_BUTTON_PRESSED:				// 右键 
+
+			case RIGHTMOST_BUTTON_PRESSED:				// 右键
 //				FillConsoleOutputCharacter(hOut, 'a', 1, crPos, &res);
 				a[0] = -1,a[1] = -1;//取消上一次的左键点击
 				return 0;
@@ -571,10 +574,10 @@ int getclick(int *a)  //获取鼠标输入
 			}
 		}
 	}
-	CloseHandle(hOut);  // 关闭标准输出设备句柄  
-	CloseHandle(hIn);   // 关闭标准输入设备句柄  
-	return 0;  
-} 
+//	CloseHandle(hOut);  // 关闭标准输出设备句柄
+//	CloseHandle(hIn);   // 关闭标准输入设备句柄
+	return 0;
+}
 int checkpiece(const int *a,const int **b,const int m)//检查鼠标输入是否为走方棋子
 {
 	int i,j;
@@ -641,7 +644,7 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 		if((piece-1)/7 == (place-1)/7)
 			return 1;
 	switch(piece%7){
-	case 1:                                         //܇車
+	case 1:                                         //?車
 		if(x1 == x2)
 		{
 			if(y1 < y2)
@@ -683,18 +686,14 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 		if (abs(x1-x2) == 1 && abs(y1-y2) == 2)
 		{
 			if(chpiece[x1][y1+(y2-y1)/2] == 0)
-			{
 				return 0;
-			}
 			else
 				return 1;
 		}
 		else if (abs(x1-x2) == 2 && abs(y1-y2) == 1)
 		{
 			if(chpiece[x1+(x2-x1)/2][y1] == 0)
-			{
 				return 0;
-			}
 			else
 				return 1;
 		}
@@ -710,9 +709,8 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 		{
 			if(chpiece[(x1+x2)/2][(y1+y2)/2] != 0)
 				return 1;
-			
-			
-			return 0;
+			else
+				return 0;
 		}
 		else
 			return 1;
@@ -727,9 +725,7 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 			if(x2 > 2)
 				return 1;
 		if(abs(x1-x2) == 1 && abs(y1-y2) == 1)
-		{
 			return 0;
-		}
 		else
 			return 1;
 		break;
@@ -776,16 +772,12 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 					if(chpiece[x1][i] != 0)
 						count++;
 				if(count == 1 && chpiece[x2][y2] != 0)
-				{
 					return 0;
-				}
 				else if(count == 0 && chpiece[x2][y2] == 0)
-				{
 					return 0;
-				}
 				else
 					return 1;
-				
+
 			}
 			else
 			{
@@ -793,13 +785,9 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 					if(chpiece[x1][i] != 0)
 						count++;
 				if(count == 1 && chpiece[x2][y2] != 0)
-				{
 					return 0;
-				}
 				else if(count == 0 && chpiece[x2][y2] == 0)
-				{
 					return 0;
-				}
 				else
 					return 1;
 			}
@@ -812,13 +800,9 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 					if(chpiece[i][y1] != 0)
 						count++;
 				if(count == 1 && chpiece[x2][y2] != 0)
-				{
 					return 0;
-				}
 				else if(count == 0 && chpiece[x2][y2] == 0)
-				{
 					return 0;
-				}
 				else
 					return 1;
 			}
@@ -828,13 +812,9 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 					if(chpiece[i][y1] != 0)
 						count++;
 				if(count == 1 && chpiece[x2][y2] != 0)
-				{
 					return 0;
-				}
 				else if(count == 0 && chpiece[x2][y2] == 0)
-				{
 					return 0;
-				}
 				else
 					return 1;
 			}
@@ -848,13 +828,9 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 			if(x1 > 4)
 			{
 				if(abs(y2-y1)== 1 && x2 == x1)
-				{
 					return 0;
-				}
 				else if(x2-x1 == 1 && y2 == y1)
-				{
 					return 0;
-				}
 				else
 					return 1;
 			}
@@ -863,9 +839,7 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 				if(x2-x1 != 1 || y2 !=y1)
 					return 1;
 				else
-				{
 					return 0;
-				}
 			}
 		}
 		if(chpiece[x1][y1] == 14)
@@ -873,13 +847,9 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 			if(x1 < 5)
 			{
 				if(abs(y2-y1)== 1 && x2 == x1)
-				{
 					return 0;
-				}
 				else if(x1-x2 == 1 && y2 == y1)
-				{
 					return 0;
-				}
 				else
 					return 1;
 			}
@@ -888,9 +858,7 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 				if(x1-x2 != 1 || y2 !=y1)
 					return 1;
 				else
-				{
 					return 0;
-				}
 			}
 		}
 		else
@@ -899,6 +867,7 @@ int inmove(const int *fclickplace,const int *sclickplace,int **chpiece)//象棋�
 	default:
 		break;
 	}
+	return 0;
 }
 int function(const int *a)                                               //功能选择
 {
@@ -919,16 +888,16 @@ int gameend(const int **chpiece,const int count)						//判断游戏结束
 	if(count)
 	{
 		color(10);
-		gotoxy(16,32);
-		printf("   绿方赢  ");
+		gotoxy(14,32);
+		printf("     绿方赢  ");
 	}
 	else
 	{
 		color(12);
-		gotoxy(16,32);
-		printf("   红方胜  ");
+		gotoxy(14,32);
+		printf("     红方胜  ");
 	}
 	color(7);
 	return 1;
-	
+
 }
